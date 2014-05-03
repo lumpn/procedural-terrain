@@ -5,8 +5,7 @@ using System.Collections.Generic;
 public class MarchingCubes : MonoBehaviour {
 
     private IDensity CreateDensity() {
-        //IDensity density = new Sphere(new Vector3(0, 0, 0), 5);
-        return new PerlinPlane(1/20.0f, 5.0f);
+        return new PerlinPlane(1 / 20.0f, 5.0f);
     }
 
     private const int minXZ = 0;
@@ -382,147 +381,6 @@ public class MarchingCubes : MonoBehaviour {
     }
 
     /**
-       Polygonize a tetrahedron given its vertices within a cube
-       This is an alternative algorithm to polygonizegrid.
-       It results in a smoother surface but more triangular facets.
-
-                          + 0
-                         /|\
-                        / | \
-                       /  |  \
-                      /   |   \
-                     /    |    \
-                    /     |     \
-                   +-------------+ 1
-                  3 \     |     /
-                     \    |    /
-                      \   |   /
-                       \  |  /
-                        \ | /
-                         \|/
-                          + 2
-
-       It's main purpose is still to polygonize a gridded dataset and
-       would normally be called 6 times, one for each tetrahedron making
-       up the grid cell.
-    */
-    List<Triangle> PolygonizeWithTri(GridCell grid, float iso) {
-        List<Triangle> result = new List<Triangle>();
-        result.AddRange(PolygonizeTri(grid, iso, 0, 2, 3, 7));
-        result.AddRange(PolygonizeTri(grid, iso, 0, 2, 6, 7));
-        result.AddRange(PolygonizeTri(grid, iso, 0, 4, 6, 7));
-        result.AddRange(PolygonizeTri(grid, iso, 0, 6, 1, 2));
-        result.AddRange(PolygonizeTri(grid, iso, 0, 6, 1, 4));
-        result.AddRange(PolygonizeTri(grid, iso, 5, 6, 1, 4));
-        return result;
-    }
-
-
-    List<Triangle> PolygonizeTri(GridCell g, float iso, int v0, int v1, int v2, int v3) {
-
-        /*
-           Determine which of the 16 cases we have given which vertices
-           are above or below the isosurface
-        */
-        int triIndex = 0;
-        if (g.val[v0] < iso) triIndex |= 1;
-        if (g.val[v1] < iso) triIndex |= 2;
-        if (g.val[v2] < iso) triIndex |= 4;
-        if (g.val[v3] < iso) triIndex |= 8;
-
-        /* Form the vertices of the triangles for each case */
-        List<Triangle> result = new List<Triangle>();
-        List<Triangle> result2 = new List<Triangle>();
-        List<Triangle> result3 = new List<Triangle>();
-        switch (triIndex) {
-            case 0x00:
-            case 0x0F:
-                break;
-            case 0x0E:
-            case 0x01: {
-                    Triangle tri = new Triangle();
-                    tri.p[0] = VertexInterp(iso, g.p[v0], g.p[v1], g.val[v0], g.val[v1]);
-                    tri.p[1] = VertexInterp(iso, g.p[v0], g.p[v2], g.val[v0], g.val[v2]);
-                    tri.p[2] = VertexInterp(iso, g.p[v0], g.p[v3], g.val[v0], g.val[v3]);
-                    result.Add(tri);
-                    break;
-                }
-            case 0x0D:
-            case 0x02: {
-                    Triangle tri = new Triangle();
-                    tri.p[0] = VertexInterp(iso, g.p[v1], g.p[v0], g.val[v1], g.val[v0]);
-                    tri.p[1] = VertexInterp(iso, g.p[v1], g.p[v2], g.val[v1], g.val[v2]);
-                    tri.p[2] = VertexInterp(iso, g.p[v1], g.p[v3], g.val[v1], g.val[v3]);
-                    result2.Add(tri);
-                    break;
-                }
-            case 0x0C:
-            case 0x03: {
-                    Triangle tri = new Triangle();
-                    tri.p[0] = VertexInterp(iso, g.p[v0], g.p[v3], g.val[v0], g.val[v3]);
-                    tri.p[1] = VertexInterp(iso, g.p[v0], g.p[v2], g.val[v0], g.val[v2]);
-                    tri.p[2] = VertexInterp(iso, g.p[v1], g.p[v3], g.val[v1], g.val[v3]);
-                    result2.Add(tri);
-                    Triangle tri2 = new Triangle();
-                    tri2.p[0] = tri.p[2];
-                    tri2.p[1] = tri.p[1];
-                    tri2.p[2] = VertexInterp(iso, g.p[v1], g.p[v2], g.val[v1], g.val[v2]);
-                    result2.Add(tri2);
-                    break;
-                }
-            case 0x0B:
-            case 0x04: {
-                    Triangle tri = new Triangle();
-                    tri.p[0] = VertexInterp(iso, g.p[v2], g.p[v0], g.val[v2], g.val[v0]);
-                    tri.p[1] = VertexInterp(iso, g.p[v2], g.p[v1], g.val[v2], g.val[v1]);
-                    tri.p[2] = VertexInterp(iso, g.p[v2], g.p[v3], g.val[v2], g.val[v3]);
-                    result2.Add(tri);
-                    break;
-                }
-            case 0x0A:
-            case 0x05: {
-                    Triangle tri = new Triangle();
-                    tri.p[0] = VertexInterp(iso, g.p[v0], g.p[v1], g.val[v0], g.val[v1]);
-                    tri.p[1] = VertexInterp(iso, g.p[v0], g.p[v3], g.val[v0], g.val[v3]);
-                    tri.p[2] = VertexInterp(iso, g.p[v2], g.p[v3], g.val[v2], g.val[v3]);
-                    result.Add(tri);
-                    Triangle tri2 = new Triangle();
-                    tri2.p[0] = tri.p[0];
-                    tri2.p[1] = tri.p[1];
-                    tri2.p[2] = VertexInterp(iso, g.p[v1], g.p[v2], g.val[v1], g.val[v2]);
-                    result2.Add(tri2);
-                    break;
-                }
-            case 0x09:
-            case 0x06: {
-                    Triangle tri = new Triangle();
-                    tri.p[0] = VertexInterp(iso, g.p[v0], g.p[v1], g.val[v0], g.val[v1]);
-                    tri.p[1] = VertexInterp(iso, g.p[v1], g.p[v3], g.val[v1], g.val[v3]);
-                    tri.p[2] = VertexInterp(iso, g.p[v2], g.p[v3], g.val[v2], g.val[v3]);
-                    result3.Add(tri); // TODO
-                    Triangle tri2 = new Triangle();
-                    tri2.p[0] = tri.p[0];
-                    tri2.p[1] = VertexInterp(iso, g.p[v0], g.p[v2], g.val[v0], g.val[v2]);
-                    tri2.p[2] = tri.p[2];
-                    result3.Add(tri2); // TODO
-                    break;
-                }
-            case 0x07:
-            case 0x08: {
-                    Triangle tri = new Triangle();
-                    tri.p[0] = VertexInterp(iso, g.p[v3], g.p[v0], g.val[v3], g.val[v0]);
-                    tri.p[1] = VertexInterp(iso, g.p[v3], g.p[v1], g.val[v3], g.val[v1]);
-                    tri.p[2] = VertexInterp(iso, g.p[v3], g.p[v2], g.val[v3], g.val[v2]);
-                    result2.Add(tri);
-                    break;
-                }
-        }
-
-        return result;
-    }
-
-
-    /**
        Linearly interpolate the position where an isosurface cuts
        an edge between two vertices, each with their own scalar value
     */
@@ -535,9 +393,9 @@ public class MarchingCubes : MonoBehaviour {
         float mu = (isolevel - valp1) / (valp2 - valp1);
 
         Vector3 p = new Vector3();
-        p.x = (float) (p1.x + mu * (p2.x - p1.x));
-        p.y = (float) (p1.y + mu * (p2.y - p1.y));
-        p.z = (float) (p1.z + mu * (p2.z - p1.z));
+        p.x = (float)(p1.x + mu * (p2.x - p1.x));
+        p.y = (float)(p1.y + mu * (p2.y - p1.y));
+        p.z = (float)(p1.z + mu * (p2.z - p1.z));
 
         return p;
     }
@@ -622,18 +480,5 @@ public class MarchingCubes : MonoBehaviour {
         return cell;
     }
 
-    /*
-    private float simpleNoise(float x, float y, float z) {
-        float density = 0.5f - y;
-        float perlinX = Wrap(x * perlinScale);
-        float perlinY = Wrap(z * perlinScale);
-        density += Mathf.PerlinNoise(perlinX, perlinY) * 10.0f - 5.0f;
-        return density;
-    }
-
-    private float Wrap(float v) {
-        return v - Mathf.Floor(v);
-    }
-    */
     private Mesh mesh;
 }
