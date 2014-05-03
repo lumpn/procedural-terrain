@@ -1,36 +1,21 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
-public class MarchingCubes : MonoBehaviour {
+public class MarchingCubes {
 
-    private IDensity CreateDensity() {
-        return new PerlinPlane(1 / 20.0f, 5.0f);
+    /// <summary>
+    /// Marching Cube. Represented by 8 vertex positions and
+    /// their respective density value.
+    /// </summary>
+    private class Cell {
+        public Vector3[] p = new Vector3[8];
+        public float[] val = new float[8];
     }
 
-    private const int minXZ = 0;
-    private const int maxXZ = 100;
-
-    private const float epsilon = 0.001f;
-
-    public class Triangle {
-        public Vector3[] p; //3
-
-        public Triangle() {
-            p = new Vector3[3];
-        }
-    }
-
-    public class GridCell {
-        public Vector3[] p; //8
-        public float[] val; //8
-
-        public GridCell() {
-            p = new Vector3[8];
-            val = new float[8];
-        }
-    }
-
+    /// <summary>
+    /// Pre-computed edge table for cell polygonization.
+    /// </summary>
     private static int[] edgeTable = {
                 0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
                 0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
@@ -66,6 +51,9 @@ public class MarchingCubes : MonoBehaviour {
                 0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
             };
 
+    /// <summary>
+    /// Pre-computed triangle table for cell polygonization.
+    /// </summary>
     private static int[,] triTable = {
                 {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
                 {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -325,160 +313,126 @@ public class MarchingCubes : MonoBehaviour {
                 {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
             };
 
+    /// <summary>
+    /// Precision cutoff
+    /// </summary>
+    private const float epsilon = 0.001f;
 
-    /**
-      Given a grid cell and an isolevel, calculate the triangular
-      facets required to represent the isosurface through the cell.
-      Return the number of triangular facets, the array "triangles"
-      will be loaded up with the vertices at most 5 triangular facets.
-	  0 will be returned if the grid cell is either totally above
-      of totally below the isolevel.
-    */
-    IEnumerable<Triangle> Polygonize(GridCell grid, float isolevel) {
+    /// <summary>
+    /// Linearly interpolate the position where an isosurface cuts
+    /// an edge between two vertices, each with their own scalar value
+    /// </summary>
+    private Vector3 VertexInterp(float isolevel, Vector3 p1, Vector3 p2, float valp1, float valp2) {
 
-        /*
-           Determine the index into the edge table which
-           tells us which vertices are inside of the surface
-        */
+        // floating point precision checks
+        if (Mathf.Abs(isolevel - valp1) < epsilon) return p1;
+        if (Mathf.Abs(isolevel - valp2) < epsilon) return p2;
+        if (Mathf.Abs(valp1 - valp2) < epsilon) return p1;
+
+        // lerp
+        float mu = (isolevel - valp1) / (valp2 - valp1);
+        return Vector3.Lerp(p1, p2, mu);
+    }
+
+    /// <summary>
+    /// Given a grid cell and an isolevel, calculate the triangular
+    /// facets required to represent the isosurface through the cell.
+    /// Will return triplets of vertices representing at most 5
+    /// triangular facets. An empty list will be returned if the grid
+    /// cell is either totally above or totally below the isolevel.
+    /// </summary>
+    private IEnumerable<Vector3> Polygonize(Cell grid, float isoLevel) {
+
+        // Determine the index into the edge table which
+        // tells us which vertices are inside of the surface
         int cubeindex = 0;
-        if (grid.val[0] < isolevel) cubeindex |= 1;
-        if (grid.val[1] < isolevel) cubeindex |= 2;
-        if (grid.val[2] < isolevel) cubeindex |= 4;
-        if (grid.val[3] < isolevel) cubeindex |= 8;
-        if (grid.val[4] < isolevel) cubeindex |= 16;
-        if (grid.val[5] < isolevel) cubeindex |= 32;
-        if (grid.val[6] < isolevel) cubeindex |= 64;
-        if (grid.val[7] < isolevel) cubeindex |= 128;
+        if (grid.val[0] < isoLevel) cubeindex |= 1;
+        if (grid.val[1] < isoLevel) cubeindex |= 2;
+        if (grid.val[2] < isoLevel) cubeindex |= 4;
+        if (grid.val[3] < isoLevel) cubeindex |= 8;
+        if (grid.val[4] < isoLevel) cubeindex |= 16;
+        if (grid.val[5] < isoLevel) cubeindex |= 32;
+        if (grid.val[6] < isoLevel) cubeindex |= 64;
+        if (grid.val[7] < isoLevel) cubeindex |= 128;
 
-        /* Cube is entirely in/out of the surface */
+        // Cube is entirely in/out of the surface
         if (edgeTable[cubeindex] == 0) {
             yield break;
         }
 
-        /* Find the vertices where the surface intersects the cube */
+        // Find the vertices where the surface intersects the cube
         Vector3[] vertlist = new Vector3[12];
-        if ((edgeTable[cubeindex] & 1) != 0) vertlist[0] = VertexInterp(isolevel, grid.p[0], grid.p[1], grid.val[0], grid.val[1]);
-        if ((edgeTable[cubeindex] & 2) != 0) vertlist[1] = VertexInterp(isolevel, grid.p[1], grid.p[2], grid.val[1], grid.val[2]);
-        if ((edgeTable[cubeindex] & 4) != 0) vertlist[2] = VertexInterp(isolevel, grid.p[2], grid.p[3], grid.val[2], grid.val[3]);
-        if ((edgeTable[cubeindex] & 8) != 0) vertlist[3] = VertexInterp(isolevel, grid.p[3], grid.p[0], grid.val[3], grid.val[0]);
-        if ((edgeTable[cubeindex] & 16) != 0) vertlist[4] = VertexInterp(isolevel, grid.p[4], grid.p[5], grid.val[4], grid.val[5]);
-        if ((edgeTable[cubeindex] & 32) != 0) vertlist[5] = VertexInterp(isolevel, grid.p[5], grid.p[6], grid.val[5], grid.val[6]);
-        if ((edgeTable[cubeindex] & 64) != 0) vertlist[6] = VertexInterp(isolevel, grid.p[6], grid.p[7], grid.val[6], grid.val[7]);
-        if ((edgeTable[cubeindex] & 128) != 0) vertlist[7] = VertexInterp(isolevel, grid.p[7], grid.p[4], grid.val[7], grid.val[4]);
-        if ((edgeTable[cubeindex] & 256) != 0) vertlist[8] = VertexInterp(isolevel, grid.p[0], grid.p[4], grid.val[0], grid.val[4]);
-        if ((edgeTable[cubeindex] & 512) != 0) vertlist[9] = VertexInterp(isolevel, grid.p[1], grid.p[5], grid.val[1], grid.val[5]);
-        if ((edgeTable[cubeindex] & 1024) != 0) vertlist[10] = VertexInterp(isolevel, grid.p[2], grid.p[6], grid.val[2], grid.val[6]);
-        if ((edgeTable[cubeindex] & 2048) != 0) vertlist[11] = VertexInterp(isolevel, grid.p[3], grid.p[7], grid.val[3], grid.val[7]);
+        if ((edgeTable[cubeindex] & 1) != 0)
+            vertlist[0] = VertexInterp(isoLevel, grid.p[0], grid.p[1], grid.val[0], grid.val[1]);
+        if ((edgeTable[cubeindex] & 2) != 0)
+            vertlist[1] = VertexInterp(isoLevel, grid.p[1], grid.p[2], grid.val[1], grid.val[2]);
+        if ((edgeTable[cubeindex] & 4) != 0)
+            vertlist[2] = VertexInterp(isoLevel, grid.p[2], grid.p[3], grid.val[2], grid.val[3]);
+        if ((edgeTable[cubeindex] & 8) != 0)
+            vertlist[3] = VertexInterp(isoLevel, grid.p[3], grid.p[0], grid.val[3], grid.val[0]);
+        if ((edgeTable[cubeindex] & 16) != 0)
+            vertlist[4] = VertexInterp(isoLevel, grid.p[4], grid.p[5], grid.val[4], grid.val[5]);
+        if ((edgeTable[cubeindex] & 32) != 0)
+            vertlist[5] = VertexInterp(isoLevel, grid.p[5], grid.p[6], grid.val[5], grid.val[6]);
+        if ((edgeTable[cubeindex] & 64) != 0)
+            vertlist[6] = VertexInterp(isoLevel, grid.p[6], grid.p[7], grid.val[6], grid.val[7]);
+        if ((edgeTable[cubeindex] & 128) != 0)
+            vertlist[7] = VertexInterp(isoLevel, grid.p[7], grid.p[4], grid.val[7], grid.val[4]);
+        if ((edgeTable[cubeindex] & 256) != 0)
+            vertlist[8] = VertexInterp(isoLevel, grid.p[0], grid.p[4], grid.val[0], grid.val[4]);
+        if ((edgeTable[cubeindex] & 512) != 0)
+            vertlist[9] = VertexInterp(isoLevel, grid.p[1], grid.p[5], grid.val[1], grid.val[5]);
+        if ((edgeTable[cubeindex] & 1024) != 0)
+            vertlist[10] = VertexInterp(isoLevel, grid.p[2], grid.p[6], grid.val[2], grid.val[6]);
+        if ((edgeTable[cubeindex] & 2048) != 0)
+            vertlist[11] = VertexInterp(isoLevel, grid.p[3], grid.p[7], grid.val[3], grid.val[7]);
 
-        /* Create the triangle */
+        // Build triangles
         for (int i = 0; triTable[cubeindex, i] != -1; i += 3) {
-            Triangle triangle = new Triangle();
-            triangle.p[0] = vertlist[triTable[cubeindex, i]];
-            triangle.p[1] = vertlist[triTable[cubeindex, i + 1]];
-            triangle.p[2] = vertlist[triTable[cubeindex, i + 2]];
-            yield return triangle;
+            yield return vertlist[triTable[cubeindex, i]];
+            yield return vertlist[triTable[cubeindex, i + 1]];
+            yield return vertlist[triTable[cubeindex, i + 2]];
         }
     }
 
-    /**
-       Linearly interpolate the position where an isosurface cuts
-       an edge between two vertices, each with their own scalar value
-    */
-    Vector3 VertexInterp(float isolevel, Vector3 p1, Vector3 p2, float valp1, float valp2) {
+    /// <summary>
+    /// Samples the density function over the given 3D range using the Marching Cubes algorithm.
+    /// Returns the isosurface represented by triplets of vertices.
+    public IEnumerable<Vector3> BuildSurface(IDensity density, float isoLevel,
+                SamplingRange xRange, SamplingRange yRange, SamplingRange zRange) {
 
-        if (Math.Abs(isolevel - valp1) < epsilon) return (p1);
-        if (Math.Abs(isolevel - valp2) < epsilon) return (p2);
-        if (Math.Abs(valp1 - valp2) < epsilon) return (p1);
+        // marching cube
+        Cell cell = new Cell();
+        for (float z1 = zRange.min; z1 < zRange.max; z1 += zRange.stepSize) {
+            for (float y1 = yRange.min; y1 < yRange.max; y1 += yRange.stepSize) {
+                for (float x1 = xRange.min; x1 < xRange.max; x1 += xRange.stepSize) {
 
-        float mu = (isolevel - valp1) / (valp2 - valp1);
+                    float x2 = x1 + xRange.stepSize;
+                    float y2 = y1 + yRange.stepSize;
+                    float z2 = z1 + zRange.stepSize;
 
-        Vector3 p = new Vector3();
-        p.x = (float)(p1.x + mu * (p2.x - p1.x));
-        p.y = (float)(p1.y + mu * (p2.y - p1.y));
-        p.z = (float)(p1.z + mu * (p2.z - p1.z));
+                    // update cube position
+                    cell.p[0] = new Vector3(x1, y1, z2);
+                    cell.p[1] = new Vector3(x2, y1, z2);
+                    cell.p[2] = new Vector3(x2, y1, z1);
+                    cell.p[3] = new Vector3(x1, y1, z1);
+                    cell.p[4] = new Vector3(x1, y2, z2);
+                    cell.p[5] = new Vector3(x2, y2, z2);
+                    cell.p[6] = new Vector3(x2, y2, z1);
+                    cell.p[7] = new Vector3(x1, y2, z1);
 
-        return p;
-    }
+                    // evaluate density function
+                    for (int i = 0; i < 8; i++) {
+                        cell.val[i] = density.Evaluate(cell.p[i]);
+                    }
 
-    // Use this for initialization
-    void Start() {
-
-        mesh = GetComponent<MeshFilter>().mesh;
-
-        // create density function
-        IDensity density = CreateDensity();
-
-        // evaluate density function
-        List<GridCell> cells = new List<GridCell>();
-        for (int z = 0; z < 100; z++) {
-            for (int y = -10; y < 10; y++) {
-                for (int x = 0; x < 100; x++) {
-                    GridCell cell = CreateCell(x, y, z, density);
-                    cells.Add(cell);
+                    // polygonize cell
+                    var vertices = Polygonize(cell, isoLevel);
+                    foreach (Vector3 vertex in vertices) {
+                        yield return vertex;
+                    }
                 }
             }
         }
-
-        // polygonize voxels
-        List<Triangle> polygonization = new List<Triangle>();
-        foreach (GridCell cell in cells) {
-            polygonization.AddRange(Polygonize(cell, 0.0f));
-        }
-
-        // update mesh
-        Debug.Log("polys: " + polygonization.Count);
-        UpdateMesh(polygonization);
     }
-
-    private void UpdateMesh(List<Triangle> polygonization) {
-        var vertices = new List<Vector3>();
-        var uvs = new List<Vector2>();
-        var triangles = new List<int>();
-
-        int baseIndex = 0;
-        foreach (var triangle in polygonization) {
-
-            vertices.Add(triangle.p[0]);
-            vertices.Add(triangle.p[1]);
-            vertices.Add(triangle.p[2]);
-
-            // TODO uvs by triplanar texturing!
-            uvs.Add(new Vector2(triangle.p[0].x, triangle.p[0].z));
-            uvs.Add(new Vector2(triangle.p[1].x, triangle.p[1].z));
-            uvs.Add(new Vector2(triangle.p[2].x, triangle.p[2].z));
-
-            triangles.Add(baseIndex++);
-            triangles.Add(baseIndex++);
-            triangles.Add(baseIndex++);
-        }
-
-        mesh.Clear();
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.uv = uvs.ToArray();
-        mesh.Optimize();
-        mesh.RecalculateNormals();
-    }
-
-
-    private static GridCell CreateCell(float x, float y, float z, IDensity density) {
-        GridCell cell = new GridCell();
-
-        cell.p[0] = new Vector3(x, y, z + 1);
-        cell.p[1] = new Vector3(x + 1, y, z + 1);
-        cell.p[2] = new Vector3(x + 1, y, z);
-        cell.p[3] = new Vector3(x, y, z);
-        cell.p[4] = new Vector3(x, y + 1, z + 1);
-        cell.p[5] = new Vector3(x + 1, y + 1, z + 1);
-        cell.p[6] = new Vector3(x + 1, y + 1, z);
-        cell.p[7] = new Vector3(x, y + 1, z);
-
-        for (int i = 0; i < 8; i++) {
-            cell.val[i] = density.Evaluate(cell.p[i]);
-        }
-
-        return cell;
-    }
-
-    private Mesh mesh;
 }
