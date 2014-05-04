@@ -1,32 +1,43 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+public static class DensityBuilder {
+    public static IDensity Add(this IDensity a, IDensity b) {
+        return new Density(p => a.Evaluate(p) + b.Evaluate(p));
+    }
+}
+
 public class TerrainMesh : MonoBehaviour {
 
-    private IDensity CreateDensity() {
-        return new PerlinPlane(1 / 20.0f, 5.0f);
+    private IDensity BuildDensity() {
+
+        // perlin layers
+        const float baseFreq = 0.05f;
+        var perlin1 = new Perlin3(1, baseFreq * 1.01f, 1.0f);
+        var perlin2 = new Perlin3(2, baseFreq * 0.49f, 2.0f);
+        var perlin3 = new Perlin3(3, baseFreq * 0.27f, 4.0f);
+
+        // base layer
+        var plane = new Plane(0);
+
+        // stitch together
+        return plane.Add(perlin1).Add(perlin2).Add(perlin3);
     }
 
-    private const int minXZ = 0;
-    private const int maxXZ = 100;
-
-    private const float epsilon = 0.001f;
-
-    // Use this for initialization
     void Start() {
 
         mesh = GetComponent<MeshFilter>().mesh;
 
         // create density function
-        IDensity density = CreateDensity();
-        float isoLevel = 0.0f;
+        const float isoLevel = 0.0f;
+        IDensity density = BuildDensity();
 
         // create surface evaluator
         MarchingCubes evaluator = new MarchingCubes();
 
         // sample density function
-        SamplingRange xzRange = new SamplingRange(0, 20, 0.5f);
-        SamplingRange yRange = new SamplingRange(-10, 10, 0.5f);
+        SamplingRange xzRange = new SamplingRange(0, 10, 0.25f);
+        SamplingRange yRange = new SamplingRange(-10, 10, 0.25f);
         var surface = evaluator.BuildSurface(density, isoLevel, xzRange, yRange, xzRange);
 
         // limit vertices
