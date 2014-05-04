@@ -1,0 +1,76 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{31CFF088-807B-3D61-D2E1-367D44B5F493}") = "terraingen", "Assembly-CSharp-firstpass.csproj", "{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}"
+EndProject
+Project("{31CFF088-807B-3D61-D2E1-367D44B5F493}") = "terraingen", "Assembly-CSharp.csproj", "{48BBAD81-F558-BEA1-7C29-A5BD68BD9AAF}"
+EndProject
+Project("{31CFF088-807B-3D61-D2E1-367D44B5F493}") = "terraingen", "Assembly-UnityScript-firstpass.unityproj", "{4E86C0A9-98BF-A186-1840-36870DF32771}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48BBAD81-F558-BEA1-7C29-A5BD68BD9AAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48BBAD81-F558-BEA1-7C29-A5BD68BD9AAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48BBAD81-F558-BEA1-7C29-A5BD68BD9AAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48BBAD81-F558-BEA1-7C29-A5BD68BD9AAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E86C0A9-98BF-A186-1840-36870DF32771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E86C0A9-98BF-A186-1840-36870DF32771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E86C0A9-98BF-A186-1840-36870DF32771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E86C0A9-98BF-A186-1840-36870DF32771}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+																																																																							GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
+		Policies = $0
+		$0.TextStylePolicy = $1
+		$1.inheritsSet = null
+		$1.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $2
+		$2.IndentSwitchBody = True
+		$2.NamespaceBraceStyle = EndOfLine
+		$2.ClassBraceStyle = EndOfLine
+		$2.InterfaceBraceStyle = EndOfLine
+		$2.StructBraceStyle = EndOfLine
+		$2.EnumBraceStyle = EndOfLine
+		$2.MethodBraceStyle = EndOfLine
+		$2.ConstructorBraceStyle = EndOfLine
+		$2.DestructorBraceStyle = EndOfLine
+		$2.IfElseBraceForcement = AddBraces
+		$2.ForBraceForcement = AddBraces
+		$2.WhileBraceForcement = AddBraces
+		$2.UsingBraceForcement = AddBraces
+		$2.FixedBraceForcement = AddBraces
+		$2.ElseIfNewLinePlacement = SameLine
+		$2.BeforeMethodDeclarationParentheses = False
+		$2.BeforeMethodCallParentheses = False
+		$2.BeforeConstructorDeclarationParentheses = False
+		$2.BeforeIndexerDeclarationBracket = False
+		$2.BeforeDelegateDeclarationParentheses = False
+		$2.NewParentheses = False
+		$2.SpacesBeforeBrackets = False
+		$2.SpacesAfterTypecast = True
+		$2.BlankLinesBeforeFirstDeclaration = 1
+		$2.inheritsSet = Mono
+		$2.inheritsScope = text/x-csharp
+		$2.scope = text/x-csharp
+		$0.TextStylePolicy = $3
+		$3.FileWidth = 90
+		$3.TabWidth = 2
+		$3.IndentWidth = 2
+		$3.NoTabsAfterNonTabs = True
+		$3.inheritsSet = VisualStudio
+		$3.inheritsScope = text/plain
+		$3.scope = text/plain
+	EndGlobalSection
+
+EndGlobal
