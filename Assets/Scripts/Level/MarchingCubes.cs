@@ -399,7 +399,7 @@ public class MarchingCubes {
     /// Samples the density function over the given 3D range using the Marching Cubes algorithm.
     /// Returns the isosurface represented by triplets of vertices.
     public IEnumerable<Vector3> BuildSurface(IDensity density, float isoLevel,
-                SamplingRange xRange, SamplingRange yRange, SamplingRange zRange) {
+                SamplingRange xRange, SamplingRange yRange, SamplingRange zRange, Vector3 offset) {
 
         // marching cube
         Cell cell = new Cell();
@@ -423,7 +423,7 @@ public class MarchingCubes {
 
                     // evaluate density function
                     for (int i = 0; i < 8; i++) {
-                        cell.val[i] = density.Evaluate(cell.p[i]);
+                        cell.val[i] = density.Evaluate(cell.p[i] + offset);
                     }
 
                     // polygonize cell
