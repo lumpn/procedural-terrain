@@ -58,6 +58,7 @@
      <Compile Include="Assets\Scripts\Level\Perlin3.cs" />
      <Compile Include="Assets\Scripts\Level\Plane.cs" />
      <Compile Include="Assets\Scripts\Level\PolygonGenerator.cs" />
+     <Compile Include="Assets\Scripts\Level\Ring.cs" />
      <Compile Include="Assets\Scripts\Level\SamplingRange.cs" />
      <Compile Include="Assets\Scripts\Level\Sphere.cs" />
      <Compile Include="Assets\Scripts\Level\TerrainMesh.cs" />

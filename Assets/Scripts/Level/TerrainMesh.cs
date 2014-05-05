@@ -25,6 +25,9 @@ public class TerrainMesh : MonoBehaviour {
         var island2 = new FloatingIsland(new Vector3(8, 2, -1), 4);
         var island3 = new FloatingIsland(new Vector3(4, 3, 11), 3);
 
+        // ring
+        var ring1 = new Ring(new Vector3(5, -4, 5), 8);
+        var ring2 = new Ring(new Vector3(0, -3, 2), 4);
 
         // base layer
         var plane = new Plane(0);
@@ -40,9 +43,16 @@ public class TerrainMesh : MonoBehaviour {
             islands = Mathf.Max(islands, island1.Evaluate(p));
             islands = Mathf.Max(islands, island2.Evaluate(p));
             islands = Mathf.Max(islands, island3.Evaluate(p));
-            islands += perlin0.Evaluate(p);
-
+            // islands += perlin0.Evaluate(p);
             density = Mathf.Max(density, islands);
+
+            // combine with ring
+            Quaternion rotate = Quaternion.AngleAxis(30, Vector3.up);
+            float rings = -1000.0f;
+            rings = Mathf.Max(rings, ring1.Evaluate(p));
+            rings = Mathf.Max(rings, ring2.Evaluate(rotate * p));
+            density = Mathf.Max(density, rings);
+
             return density;
             //            return Mathf.Min(cone.Evaluate(), sphere.Evaluate(p - islandPos));
             //Mathf.Lerp(plane.Evaluate(p), sphere.Evaluate(p), Mathf.Clamp01(outer.Evaluate(p)));
