@@ -8,20 +8,51 @@ public class TerrainMesh : MonoBehaviour {
     private IDensity BuildDensity() {
 
         // perlin layers
-        const float baseFreq = 0.05f;
-        var perlin1 = new Perlin3(1, baseFreq * 1.01f, 1.0f);
-        var perlin2 = new Perlin3(2, baseFreq * 0.49f, 2.0f);
-        var perlin3 = new Perlin3(3, baseFreq * 0.27f, 4.0f);
+        const float baseFreq = 0.025f;
+        var perlin0 = new Perlin3(0, baseFreq * 3.99f, 0.25f);
+        var perlin1 = new Perlin3(1, baseFreq * 2.03f, 0.50f);
+        var perlin2 = new Perlin3(2, baseFreq * 1.01f, 1.00f);
+        var perlin3 = new Perlin3(3, baseFreq * 0.49f, 2.00f);
+
+        var islandPos = new Vector3(5, 5, 5);
+        var sphere = new Sphere(islandPos, 3);
+        var outer = new Sphere(new Vector3(5, 2, 5), 5);
+        var floatingIsland = new FloatingIsland(islandPos, 5);
+        var cone = new Cone(islandPos, v => Mathf.Sqrt(2 * v));
+
+        // create floating islands
+        var island1 = new FloatingIsland(new Vector3(10, 5, 10), 10);
+        var island2 = new FloatingIsland(new Vector3(8, 2, -1), 4);
+        var island3 = new FloatingIsland(new Vector3(4, 3, 11), 3);
+
 
         // base layer
         var plane = new Plane(0);
 
         // stitch together
         return new Density(p => {
-            return plane.Evaluate(p)
-                 + perlin1.Evaluate(p)
-                 + perlin2.Evaluate(p)
-                 + perlin3.Evaluate(p);
+
+            // start with plane
+            float density = plane.Evaluate(p);
+
+            // combine with islands and add a bit of noise
+            float islands = -1000.0f;
+            islands = Mathf.Max(islands, island1.Evaluate(p));
+            islands = Mathf.Max(islands, island2.Evaluate(p));
+            islands = Mathf.Max(islands, island3.Evaluate(p));
+            islands += perlin0.Evaluate(p);
+
+            density = Mathf.Max(density, islands);
+            return density;
+            //            return Mathf.Min(cone.Evaluate(), sphere.Evaluate(p - islandPos));
+            //Mathf.Lerp(plane.Evaluate(p), sphere.Evaluate(p), Mathf.Clamp01(outer.Evaluate(p)));
+            //                + perlin0.Evaluate(p);
+            //           + perlin1.Evaluate(p)
+            //           + perlin2.Evaluate(p)
+            //           + perlin3.Evaluate(p);
+
+            // floating island
+
         });
     }
 
@@ -77,11 +108,11 @@ public class TerrainMesh : MonoBehaviour {
             var nz = Mathf.Abs(normal.z);
 
             // select triplanar mapping by largest normal component
-            Func<Vector3, Vector2> mapping = SelectXZ;
+            Func<Vector3, Vector2> mapping = (p => new Vector2(p.x, p.z));
             if (nx >= nz && nx > ny) {
-                mapping = SelectYZ;
+                mapping = (p => new Vector2(p.y, p.z));
             } else if (nz >= nx && nz > ny) {
-                mapping = SelectXY;
+                mapping = (p => new Vector2(p.x, p.y));
             }
 
             // build UVs
@@ -102,17 +133,5 @@ public class TerrainMesh : MonoBehaviour {
         mesh.uv = uvs.ToArray();
         mesh.Optimize();
         mesh.RecalculateNormals();
-    }
-
-    private static Vector2 SelectXY(Vector3 v) {
-        return new Vector2(v.x, v.y);
-    }
-
-    private static Vector2 SelectXZ(Vector3 v) {
-        return new Vector2(v.x, v.z);
-    }
-
-    private static Vector2 SelectYZ(Vector3 v) {
-        return new Vector2(v.y, v.z);
     }
 }

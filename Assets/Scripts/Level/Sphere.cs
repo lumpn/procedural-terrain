@@ -10,7 +10,7 @@ public class Sphere : IDensity {
 
     public float Evaluate(Vector3 pos) {
         float distance = Vector3.Distance(origin, pos);
-        return Mathf.Clamp(radius - distance, -1, 1);
+        return (radius - distance);
     }
 
     private Vector3 origin;
