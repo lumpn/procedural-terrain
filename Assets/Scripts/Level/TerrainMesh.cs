@@ -35,6 +35,7 @@ public class TerrainMesh : MonoBehaviour {
 
             // start with plane
             float density = plane.Evaluate(p);
+            return density;
 
             // add perlin noise
             density += perlin0.Evaluate(p);
@@ -78,28 +79,35 @@ public class TerrainMesh : MonoBehaviour {
         UpdateMesh(vertices);
     }
 
-    public void Update() {
-
-        if (Input.GetKey(KeyCode.A)) {
-            Manipulate();
-        }
-
-        if (Input.GetKey(KeyCode.Space) && (collider != null)) {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-//            UnityEngine.Debug.Log("ray from " + ray.origin + " towards " + ray.direction, this);
-            if (collider.Raycast(ray, out hit, 100.0f)) {
-                UnityEngine.Debug.Log("hit at " + hit.point, this);
-                UnityEngine.Debug.DrawLine(ray.origin, hit.point);
-                UnityEngine.Debug.DrawLine(new Vector3(10, 10, 10), hit.point);
-            }
-        }
+    public void IncreaseDensity(Vector3 position) {
+        // TODO: add influence radius
+        Manipulate(position, 2);
     }
 
-    public void Manipulate() {
-        for (int y = 0; y < 41; y++) {
-            density.Set(10, y, 10, 1);
-        }
+    public void DecreaseDensity(Vector3 position) {
+        // TODO: add influence radius
+        Manipulate(position, -2);
+    }
+
+    public void Manipulate(Vector3 position, float amount) {
+
+        // transform position to density cache indizes
+        var offset = position - transform.position;
+        int x = PositionToIndex(offset.x);
+        int y = PositionToIndex(offset.y);
+        int z = PositionToIndex(offset.z);
+        UnityEngine.Debug.Log("offset: " + offset + ", index: " + x + ", " + y + ", " + z);
+
+        // manipulate ball
+        float some = Mathf.Clamp(amount, -1, 1);
+        density.Add(x, y, z, amount);
+        density.Add(x + 1, y, z, some);
+        density.Add(x, y + 1, z, some);
+        density.Add(x, y, z + 1, some);
+        density.Add(x - 1, y, z, some);
+        density.Add(x, y - 1, z, some);
+        density.Add(x, y, z - 1, some);
+
         var vertices = BuildIsoSurface(density, 0.0f, transform.position);
         UpdateMesh(vertices);
     }
@@ -154,8 +162,16 @@ public class TerrainMesh : MonoBehaviour {
         // update collider
         var collider = GetComponent<MeshCollider>();
         if (collider != null) {
+            collider.sharedMesh = null;
             collider.sharedMesh = mesh;
         }
+    }
+
+    private static int PositionToIndex(float x) {
+        // HACK: This is the hard coded inverse transformation
+        // of density cache indizes. This breaks when hard coded
+        // sampling is modified.
+        return Mathf.FloorToInt((5 + x) * 4);
     }
 
     private static List<Vector3> BuildIsoSurface(IIndexDensity density, float isoLevel, Vector3 offset) {
