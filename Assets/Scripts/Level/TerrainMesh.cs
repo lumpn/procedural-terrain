@@ -81,12 +81,12 @@ public class TerrainMesh : MonoBehaviour {
 
     public void IncreaseDensity(Vector3 position) {
         // TODO: add influence radius
-        Manipulate(position, 2);
+        Manipulate(position, 5);
     }
 
     public void DecreaseDensity(Vector3 position) {
         // TODO: add influence radius
-        Manipulate(position, -2);
+        Manipulate(position, -5);
     }
 
     public void Manipulate(Vector3 position, float amount) {
@@ -99,14 +99,15 @@ public class TerrainMesh : MonoBehaviour {
         UnityEngine.Debug.Log("offset: " + offset + ", index: " + x + ", " + y + ", " + z);
 
         // manipulate ball
-        float some = Mathf.Clamp(amount, -1, 1);
+        float some = amount * 0.25f;
         density.Add(x, y, z, amount);
-        density.Add(x + 1, y, z, some);
-        density.Add(x, y + 1, z, some);
-        density.Add(x, y, z + 1, some);
-        density.Add(x - 1, y, z, some);
-        density.Add(x, y - 1, z, some);
-        density.Add(x, y, z - 1, some);
+        for (int k = -1; k <= 1; k++) {
+            for (int j = -1; j <= 1; j++) {
+                for (int i = -1; i <= 1; i++) {
+                    density.Add(x + i, y + j, z + k, some);
+                }
+            }
+        }
 
         var vertices = BuildIsoSurface(density, 0.0f, transform.position);
         UpdateMesh(vertices);
