@@ -22,9 +22,9 @@ public class TerrainMesh : MonoBehaviour {
         //var perlin3 = new Perlin3(3, baseFreq * 0.49f, 2.00f);
 
         // floating islands
-        var island1 = new FloatingIsland(new Vector3(10, 5, 10), 10);
+        var island1 = new FloatingIsland(new Vector3(10, 4, 10), 6);
         var island2 = new FloatingIsland(new Vector3(8, 2, -1), 4);
-        var island3 = new FloatingIsland(new Vector3(4, 3, 11), 3);
+        var island3 = new FloatingIsland(new Vector3(0, 3, 11), 3);
 
         // rings
         var ring1 = new Ring(new Vector3(5, -4, 5), 8);
@@ -64,35 +64,24 @@ public class TerrainMesh : MonoBehaviour {
 
     void Start() {
 
-        // measure execution time
-        var process = Process.GetCurrentProcess();
-        var time1 = process.TotalProcessorTime;
-
         // create density function
         const float isoLevel = 0.0f;
-        IDensity density = BuildDensity();
-
-        // create surface evaluator
-        MarchingCubes evaluator = new MarchingCubes();
-
-        // sample density function
-        SamplingRange xyzRange = new SamplingRange(-5, 5, 0.25f);
-        var surface = evaluator.BuildSurface(new CachedDensity(density), isoLevel, xyzRange, xyzRange, xyzRange, transform.position);
-
-        // limit vertices
-        const int maxVertices = 64998;
-        var vertices = new List<Vector3>(surface);
-        UnityEngine.Debug.Log("vertices: " + vertices.Count);
-        if (vertices.Count > maxVertices) {
-            vertices = vertices.GetRange(0, maxVertices);
-        }
-
-        // log execution time
-        var time2 = process.TotalProcessorTime;
-        UnityEngine.Debug.Log("generation: " + (time2 - time1).TotalMilliseconds + " ms");
+        IDensity proceduralDensity = BuildDensity();
 
         // build mesh
+        density = new CachedDensity(proceduralDensity);
+        var vertices = BuildIsoSurface(density, isoLevel, transform.position);
         UpdateMesh(vertices);
+    }
+
+    public void Update() {
+        if (Input.GetKey(KeyCode.A)) {
+            for (int y = 0; y < 41; y++) {
+                density.Set(10, y, 10, 1);
+            }
+            var vertices = BuildIsoSurface(density, 0.0f, transform.position);
+            UpdateMesh(vertices);
+        }
     }
 
     private void UpdateMesh(List<Vector3> vertices) {
@@ -140,4 +129,32 @@ public class TerrainMesh : MonoBehaviour {
         mesh.Optimize();
         mesh.RecalculateNormals();
     }
+
+    private static List<Vector3> BuildIsoSurface(IIndexDensity density, float isoLevel, Vector3 offset) {
+
+        // measure execution time
+        var process = Process.GetCurrentProcess();
+        var time1 = process.TotalProcessorTime;
+
+        // sample density function
+        MarchingCubes evaluator = new MarchingCubes();
+        SamplingRange xyzRange = new SamplingRange(-5, 5, 0.25f);
+        var surface = evaluator.BuildSurface(density, isoLevel, xyzRange, xyzRange, xyzRange, offset);
+        var vertices = new List<Vector3>(surface);
+
+        // log execution time
+        var time2 = process.TotalProcessorTime;
+        UnityEngine.Debug.Log("generation: " + (time2 - time1).TotalMilliseconds + " ms");
+
+        // limit vertices (Unity constraint)
+        const int maxVertices = 64998;
+        UnityEngine.Debug.Log("vertices: " + vertices.Count);
+        if (vertices.Count > maxVertices) {
+            return vertices.GetRange(0, maxVertices);
+        }
+
+        return vertices;
+    }
+
+    private CachedDensity density;
 }

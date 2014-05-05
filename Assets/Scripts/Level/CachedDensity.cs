@@ -39,9 +39,9 @@ public class CachedDensity : IIndexDensity {
     }
 
     public float Evaluate(int x, int y, int z, Vector3 pos) {
-        float value;
 
         // query cache
+        float value;
         var key = new CacheKey(x, y, z);
         if (cache.TryGetValue(key, out value)) {
             return value;
@@ -53,6 +53,17 @@ public class CachedDensity : IIndexDensity {
         return value;
     }
 
+    public void Add(int x, int y, int z, float amount) {
+        float value = 0; // default density
+        var key = new CacheKey(x, y, z);
+        cache.TryGetValue(key, out value);
+        cache[key] = value + amount;
+    }
+
+    public void Set(int x, int y, int z, float value) {
+        var key = new CacheKey(x, y, z);
+        cache[key] = value;
+    }
 
     private IDensity density;
     private Dictionary<CacheKey, float> cache = new Dictionary<CacheKey, float>();
