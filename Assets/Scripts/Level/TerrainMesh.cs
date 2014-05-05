@@ -81,11 +81,7 @@ public class TerrainMesh : MonoBehaviour {
     public void Update() {
 
         if (Input.GetKey(KeyCode.A)) {
-            for (int y = 0; y < 41; y++) {
-                density.Set(10, y, 10, 1);
-            }
-            var vertices = BuildIsoSurface(density, 0.0f, transform.position);
-            UpdateMesh(vertices);
+            Manipulate();
         }
 
         if (Input.GetKey(KeyCode.Space) && (collider != null)) {
@@ -98,6 +94,14 @@ public class TerrainMesh : MonoBehaviour {
                 UnityEngine.Debug.DrawLine(new Vector3(10, 10, 10), hit.point);
             }
         }
+    }
+
+    public void Manipulate() {
+        for (int y = 0; y < 41; y++) {
+            density.Set(10, y, 10, 1);
+        }
+        var vertices = BuildIsoSurface(density, 0.0f, transform.position);
+        UpdateMesh(vertices);
     }
 
     private void UpdateMesh(List<Vector3> vertices) {

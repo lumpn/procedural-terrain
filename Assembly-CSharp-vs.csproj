@@ -46,6 +46,7 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\Camera\MeshManipulation.cs" />
      <Compile Include="Assets\Scripts\Camera\SimpleSmoothMouseLook.cs" />
      <Compile Include="Assets\Scripts\Camera\UnrealCamera.cs" />
      <Compile Include="Assets\Scripts\Level\CachedDensity.cs" />
