@@ -7,6 +7,9 @@ public class TerrainMesh : MonoBehaviour {
 
     private IDensity BuildDensity() {
 
+        // base layer
+        var plane = new Plane(0);
+
         // perlin layers
         const float baseFreq = 0.025f;
         var perlin0 = new Perlin3(0, baseFreq * 3.99f, 0.25f);
@@ -14,23 +17,14 @@ public class TerrainMesh : MonoBehaviour {
         var perlin2 = new Perlin3(2, baseFreq * 1.01f, 1.00f);
         var perlin3 = new Perlin3(3, baseFreq * 0.49f, 2.00f);
 
-        var islandPos = new Vector3(5, 5, 5);
-        var sphere = new Sphere(islandPos, 3);
-        var outer = new Sphere(new Vector3(5, 2, 5), 5);
-        var floatingIsland = new FloatingIsland(islandPos, 5);
-        var cone = new Cone(islandPos, v => Mathf.Sqrt(2 * v));
-
-        // create floating islands
+        // floating islands
         var island1 = new FloatingIsland(new Vector3(10, 5, 10), 10);
         var island2 = new FloatingIsland(new Vector3(8, 2, -1), 4);
         var island3 = new FloatingIsland(new Vector3(4, 3, 11), 3);
 
-        // ring
+        // rings
         var ring1 = new Ring(new Vector3(5, -4, 5), 8);
-        var ring2 = new Ring(new Vector3(0, -3, 2), 4);
-
-        // base layer
-        var plane = new Plane(0);
+        var ring2 = new Ring(new Vector3(0, -2, 2), 4);
 
         // stitch together
         return new Density(p => {
@@ -38,31 +32,29 @@ public class TerrainMesh : MonoBehaviour {
             // start with plane
             float density = plane.Evaluate(p);
 
+            // add perlin noise
+            density += perlin0.Evaluate(p);
+            density += perlin1.Evaluate(p);
+            density += perlin2.Evaluate(p);
+            density += perlin3.Evaluate(p);
+
             // combine with islands and add a bit of noise
+            // add structural variation to big island
             float islands = -1000.0f;
-            islands = Mathf.Max(islands, island1.Evaluate(p));
+            islands = Mathf.Max(islands, island1.Evaluate(p) + perlin1.Evaluate(p));
             islands = Mathf.Max(islands, island2.Evaluate(p));
             islands = Mathf.Max(islands, island3.Evaluate(p));
-            // islands += perlin0.Evaluate(p);
+            islands += perlin0.Evaluate(p);
             density = Mathf.Max(density, islands);
 
-            // combine with ring
-            Quaternion rotate = Quaternion.AngleAxis(30, Vector3.up);
+            // combine with rings and a bit of noise
             float rings = -1000.0f;
             rings = Mathf.Max(rings, ring1.Evaluate(p));
-            rings = Mathf.Max(rings, ring2.Evaluate(rotate * p));
+            rings = Mathf.Max(rings, ring2.Evaluate(Quaternion.AngleAxis(30, Vector3.up) * p));
+            rings += perlin0.Evaluate(p);
             density = Mathf.Max(density, rings);
 
             return density;
-            //            return Mathf.Min(cone.Evaluate(), sphere.Evaluate(p - islandPos));
-            //Mathf.Lerp(plane.Evaluate(p), sphere.Evaluate(p), Mathf.Clamp01(outer.Evaluate(p)));
-            //                + perlin0.Evaluate(p);
-            //           + perlin1.Evaluate(p)
-            //           + perlin2.Evaluate(p)
-            //           + perlin3.Evaluate(p);
-
-            // floating island
-
         });
     }
 
