@@ -11,11 +11,15 @@ public class TerrainMesh : MonoBehaviour {
         var plane = new Plane(0);
 
         // perlin layers
-        const float baseFreq = 0.025f;
-        var perlin0 = new Perlin3(0, baseFreq * 3.99f, 0.25f);
-        var perlin1 = new Perlin3(1, baseFreq * 2.03f, 0.50f);
-        var perlin2 = new Perlin3(2, baseFreq * 1.01f, 1.00f);
-        var perlin3 = new Perlin3(3, baseFreq * 0.49f, 2.00f);
+        var perlin0 = new Perlin2(0.1f, 0.25f);
+        var perlin1 = perlin0;
+        var perlin2 = perlin0;
+        var perlin3 = perlin0;
+        //const float baseFreq = 0.025f;
+        //var perlin0 = new Perlin3(0, baseFreq * 3.99f, 0.25f);
+        //var perlin1 = new Perlin3(1, baseFreq * 2.03f, 0.50f);
+        //var perlin2 = new Perlin3(2, baseFreq * 1.01f, 1.00f);
+        //var perlin3 = new Perlin3(3, baseFreq * 0.49f, 2.00f);
 
         // floating islands
         var island1 = new FloatingIsland(new Vector3(10, 5, 10), 10);
@@ -73,7 +77,7 @@ public class TerrainMesh : MonoBehaviour {
 
         // sample density function
         SamplingRange xyzRange = new SamplingRange(-5, 5, 0.25f);
-        var surface = evaluator.BuildSurface(density, isoLevel, xyzRange, xyzRange, xyzRange, transform.position);
+        var surface = evaluator.BuildSurface(new CachedDensity(density), isoLevel, xyzRange, xyzRange, xyzRange, transform.position);
 
         // limit vertices
         const int maxVertices = 64998;

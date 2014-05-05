@@ -48,10 +48,12 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\Camera\SimpleSmoothMouseLook.cs" />
      <Compile Include="Assets\Scripts\Camera\UnrealCamera.cs" />
+     <Compile Include="Assets\Scripts\Level\CachedDensity.cs" />
      <Compile Include="Assets\Scripts\Level\Cone.cs" />
      <Compile Include="Assets\Scripts\Level\Density.cs" />
      <Compile Include="Assets\Scripts\Level\FloatingIsland.cs" />
      <Compile Include="Assets\Scripts\Level\IDensity.cs" />
+     <Compile Include="Assets\Scripts\Level\IIndexDensity.cs" />
      <Compile Include="Assets\Scripts\Level\MarchingCubes.cs" />
      <Compile Include="Assets\Scripts\Level\MathUtils.cs" />
      <Compile Include="Assets\Scripts\Level\Perlin2.cs" />

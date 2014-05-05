@@ -398,18 +398,30 @@ public class MarchingCubes {
     /// <summary>
     /// Samples the density function over the given 3D range using the Marching Cubes algorithm.
     /// Returns the isosurface represented by triplets of vertices.
-    public IEnumerable<Vector3> BuildSurface(IDensity density, float isoLevel,
-                SamplingRange xRange, SamplingRange yRange, SamplingRange zRange, Vector3 offset) {
+    public IEnumerable<Vector3> BuildSurface(IIndexDensity density, float isoLevel, SamplingRange xRange,
+                    SamplingRange yRange, SamplingRange zRange, Vector3 offset) {
+
+        // calculate sample count
+        int numX = Mathf.FloorToInt((xRange.max - xRange.min) / xRange.stepSize);
+        int numY = Mathf.FloorToInt((yRange.max - yRange.min) / yRange.stepSize);
+        int numZ = Mathf.FloorToInt((zRange.max - zRange.min) / zRange.stepSize);
 
         // marching cube
         Cell cell = new Cell();
-        for (float z1 = zRange.min; z1 < zRange.max; z1 += zRange.stepSize) {
-            for (float y1 = yRange.min; y1 < yRange.max; y1 += yRange.stepSize) {
-                for (float x1 = xRange.min; x1 < xRange.max; x1 += xRange.stepSize) {
+        for (int k1 = 0; k1 < numZ; k1++) {
+            for (int j1 = 0; j1 < numY; j1++) {
+                for (int i1 = 0; i1 < numX; i1++) {
 
-                    float x2 = x1 + xRange.stepSize;
-                    float y2 = y1 + yRange.stepSize;
-                    float z2 = z1 + zRange.stepSize;
+                    // calculate vertex components
+                    int i2 = i1 + 1;
+                    int j2 = j1 + 1;
+                    int k2 = k1 + 1;
+                    float x1 = xRange.min + xRange.stepSize * i1;
+                    float y1 = yRange.min + yRange.stepSize * j1;
+                    float z1 = zRange.min + zRange.stepSize * k1;
+                    float x2 = xRange.min + xRange.stepSize * i2;
+                    float y2 = yRange.min + yRange.stepSize * j2;
+                    float z2 = zRange.min + zRange.stepSize * k2;
 
                     // update cube position
                     cell.p[0] = new Vector3(x1, y1, z2);
@@ -422,9 +434,14 @@ public class MarchingCubes {
                     cell.p[7] = new Vector3(x1, y2, z1);
 
                     // evaluate density function
-                    for (int i = 0; i < 8; i++) {
-                        cell.val[i] = density.Evaluate(cell.p[i] + offset);
-                    }
+                    cell.val[0] = density.Evaluate(i1, j1, k2, cell.p[0] + offset);
+                    cell.val[1] = density.Evaluate(i2, j1, k2, cell.p[1] + offset);
+                    cell.val[2] = density.Evaluate(i2, j1, k1, cell.p[2] + offset);
+                    cell.val[3] = density.Evaluate(i1, j1, k1, cell.p[3] + offset);
+                    cell.val[4] = density.Evaluate(i1, j2, k2, cell.p[4] + offset);
+                    cell.val[5] = density.Evaluate(i2, j2, k2, cell.p[5] + offset);
+                    cell.val[6] = density.Evaluate(i2, j2, k1, cell.p[6] + offset);
+                    cell.val[7] = density.Evaluate(i1, j2, k1, cell.p[7] + offset);
 
                     // polygonize cell
                     var vertices = Polygonize(cell, isoLevel);
