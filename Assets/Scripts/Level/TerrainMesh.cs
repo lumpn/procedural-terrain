@@ -11,15 +11,11 @@ public class TerrainMesh : MonoBehaviour {
         var plane = new Plane(0);
 
         // perlin layers
-        var perlin0 = new Perlin2(0.1f, 0.25f);
-        var perlin1 = perlin0;
-        var perlin2 = perlin0;
-        var perlin3 = perlin0;
-        //const float baseFreq = 0.025f;
-        //var perlin0 = new Perlin3(0, baseFreq * 3.99f, 0.25f);
-        //var perlin1 = new Perlin3(1, baseFreq * 2.03f, 0.50f);
-        //var perlin2 = new Perlin3(2, baseFreq * 1.01f, 1.00f);
-        //var perlin3 = new Perlin3(3, baseFreq * 0.49f, 2.00f);
+        const float baseFreq = 0.025f;
+        var perlin0 = new Perlin3(0, baseFreq * 3.99f, 0.25f);
+        var perlin1 = new Perlin3(1, baseFreq * 2.03f, 0.50f);
+        var perlin2 = new Perlin3(2, baseFreq * 1.01f, 1.00f);
+        var perlin3 = new Perlin3(3, baseFreq * 0.49f, 2.00f);
 
         // floating islands
         var island1 = new FloatingIsland(new Vector3(10, 4, 10), 6);
@@ -35,7 +31,6 @@ public class TerrainMesh : MonoBehaviour {
 
             // start with plane
             float density = plane.Evaluate(p);
-            return density;
 
             // add perlin noise
             density += perlin0.Evaluate(p);
