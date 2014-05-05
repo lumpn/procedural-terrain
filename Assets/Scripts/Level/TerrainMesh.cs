@@ -64,6 +64,10 @@ public class TerrainMesh : MonoBehaviour {
 
     void Start() {
 
+        // create mesh collider for ray casts
+        var collider = gameObject.AddComponent<MeshCollider>();
+        collider.isTrigger = true;
+
         // create density function
         const float isoLevel = 0.0f;
         IDensity proceduralDensity = BuildDensity();
@@ -75,12 +79,24 @@ public class TerrainMesh : MonoBehaviour {
     }
 
     public void Update() {
+
         if (Input.GetKey(KeyCode.A)) {
             for (int y = 0; y < 41; y++) {
                 density.Set(10, y, 10, 1);
             }
             var vertices = BuildIsoSurface(density, 0.0f, transform.position);
             UpdateMesh(vertices);
+        }
+
+        if (Input.GetKey(KeyCode.Space) && (collider != null)) {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+//            UnityEngine.Debug.Log("ray from " + ray.origin + " towards " + ray.direction, this);
+            if (collider.Raycast(ray, out hit, 100.0f)) {
+                UnityEngine.Debug.Log("hit at " + hit.point, this);
+                UnityEngine.Debug.DrawLine(ray.origin, hit.point);
+                UnityEngine.Debug.DrawLine(new Vector3(10, 10, 10), hit.point);
+            }
         }
     }
 
@@ -121,6 +137,7 @@ public class TerrainMesh : MonoBehaviour {
             triangles.Add(i + 2);
         }
 
+        // update mesh
         var mesh = GetComponent<MeshFilter>().mesh;
         mesh.Clear();
         mesh.vertices = vertices.ToArray();
@@ -128,6 +145,13 @@ public class TerrainMesh : MonoBehaviour {
         mesh.uv = uvs.ToArray();
         mesh.Optimize();
         mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        // update collider
+        var collider = GetComponent<MeshCollider>();
+        if (collider != null) {
+            collider.sharedMesh = mesh;
+        }
     }
 
     private static List<Vector3> BuildIsoSurface(IIndexDensity density, float isoLevel, Vector3 offset) {
