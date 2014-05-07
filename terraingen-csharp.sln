@@ -1,8 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2008
 
-Project("{31CFF088-807B-3D61-D2E1-367D44B5F493}") = "terraingen", "Assembly-CSharp-firstpass-vs.csproj", "{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}"
-EndProject
 Project("{31CFF088-807B-3D61-D2E1-367D44B5F493}") = "terraingen", "Assembly-CSharp-vs.csproj", "{48BBAD81-F558-BEA1-7C29-A5BD68BD9AAF}"
 EndProject
 Global
@@ -11,10 +9,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{48BBAD81-F558-BEA1-7C29-A5BD68BD9AAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{48BBAD81-F558-BEA1-7C29-A5BD68BD9AAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48BBAD81-F558-BEA1-7C29-A5BD68BD9AAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -23,7 +17,7 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-																																																																																							GlobalSection(MonoDevelopProperties) = preSolution
+																																																																																												GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = Assembly-CSharp.csproj
 		Policies = $0
 		$0.TextStylePolicy = $1

@@ -68,17 +68,9 @@
      <Compile Include="Assets\Scripts\Level\TerrainMesh.cs" />
      <Compile Include="Assets\Scripts\Level\Tiling.cs" />
      <Compile Include="Assets\Scripts\Light\CyclicRotation.cs" />
-     <None Include="Assets\Standard Assets\Skyboxes\_skybox info.txt" />
-     <None Include="Assets\Standard Assets\Water (Basic)\Sources\Shaders\FX-Water Simple.shader" />
  <Reference Include="LibNoise">
  <HintPath>Assets\Scripts\Libraries\LibNoise.dll</HintPath>
  </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="Assembly-CSharp-firstpass.csproj">
-      <Project>{3C6E87E0-DE90-615C-B5D8-02D54FDD87BF}</Project>      <Name>Assembly-CSharp-firstpass</Name>    </ProjectReference>
-    <ProjectReference Include="Assembly-UnityScript-firstpass.unityproj">
-      <Project>{4E86C0A9-98BF-A186-1840-36870DF32771}</Project>      <Name>Assembly-UnityScript-firstpass</Name>    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
