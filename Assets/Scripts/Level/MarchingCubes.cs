@@ -398,7 +398,7 @@ public class MarchingCubes {
     /// <summary>
     /// Samples the density function over the given 3D range using the Marching Cubes algorithm.
     /// Returns the isosurface represented by triplets of vertices.
-    public IEnumerable<Vector3> BuildSurface(IIndexDensity density, float isoLevel, SamplingRange xRange,
+    public IEnumerable<Vector3> BuildSurface(IDensity density, float isoLevel, SamplingRange xRange,
                     SamplingRange yRange, SamplingRange zRange, Vector3 offset) {
 
         // calculate sample count
