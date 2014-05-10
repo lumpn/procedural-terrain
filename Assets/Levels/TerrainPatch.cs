@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System;
 using System.Linq;
+using UnityEngine;
 
 public class TerrainPatch {
 
@@ -10,23 +10,21 @@ public class TerrainPatch {
         this.meshObject = meshObject;
     }
 
-    public IEnumerable Evaluate(IDensity density, float isoLevel, Vector3 offset, float size, int resolution, MarchingCubes evaluator) {
-
-        // re-position
-        meshObject.transform.position = offset;
+    public IEnumerable Evaluate(MarchingCubes evaluator, IDensity density, float isoLevel, Vector3 offset, float size, int resolution) {
 
         // evaluate density
-        var range = new SamplingRange(-0.5f * size, 0.5f * size, size / resolution);
-        IEnumerable<Vector3> vertices = evaluator.BuildSurface(density, isoLevel, range, range, range, offset);
+        var range = new SamplingRange(-size / 2, size / 2, size / resolution);
+        var surface = evaluator.BuildSurface(density, isoLevel, range, range, range, offset);
 
-        // build UVs and triangles from vertices
+        // build vertices, UVs, and triangles from vertices
+        var vertices = new List<Vector3>();
         var uvs = new List<Vector2>();
         var triangles = new List<int>();
 
         int i = 0;
         int idx = 0;
         Vector3[] face = new Vector3[3];
-        foreach (var vertex in vertices) {
+        foreach (var vertex in surface) {
             yield return 0;
 
             // update face vertices
@@ -41,12 +39,17 @@ public class TerrainPatch {
             var nz = Mathf.Abs(normal.z);
 
             // select triplanar mapping by largest normal component
-            Func<Vector3, Vector2> mapping = MapXZ;
+            Func<Vector3, Vector2> mapping = GetXZ;
             if (nx >= nz && nx > ny) {
-                mapping = MapYZ;
+                mapping = GetYZ;
             } else if (nz >= nx && nz > ny) {
-                mapping = MapXY;
+                mapping = GetXY;
             }
+
+            // build vertices
+            vertices.Add(face[0]);
+            vertices.Add(face[1]);
+            vertices.Add(face[2]);
 
             // build UVs
             uvs.Add(mapping(face[0]));
@@ -77,17 +80,21 @@ public class TerrainPatch {
             collider.sharedMesh = null;
             collider.sharedMesh = mesh;
         }
+
+        // re-position
+        yield return 0;
+        meshObject.transform.position = offset;
     }
 
-    private static Vector2 MapXY(Vector3 v) {
+    private static Vector2 GetXY(Vector3 v) {
         return new Vector2(v.x, v.y);
     }
 
-    private static Vector2 MapXZ(Vector3 v) {
+    private static Vector2 GetXZ(Vector3 v) {
         return new Vector2(v.x, v.z);
     }
 
-    private static Vector2 MapYZ(Vector3 v) {
+    private static Vector2 GetYZ(Vector3 v) {
         return new Vector2(v.y, v.z);
     }
 

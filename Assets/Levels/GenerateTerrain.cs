@@ -63,7 +63,7 @@ public class GenerateTerrain : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         var camPos = Camera.main.transform.position;
-        var camPatch = camPos / patchSize;
+        var patchIdx = camPos / patchSize;
         var drawBounds = new Vector3(drawDistance, drawDistance, drawDistance);
         var boundsMin = (camPos - drawBounds) / patchSize;
         var boundsMax = (camPos + drawBounds) / patchSize;
@@ -71,24 +71,20 @@ public class GenerateTerrain : MonoBehaviour {
         var buffer = new TerrainBuffer(numPatches);
         var evaluator = new MarchingCubes();
 
-        int px = Mathf.FloorToInt(camPatch.x);
-        int py = Mathf.FloorToInt(camPatch.y);
-        int pz = Mathf.FloorToInt(camPatch.z);
-
-        int minX = Mathf.RoundToInt((camPos.x - drawDistance) / patchSize);
+        int px = Mathf.FloorToInt(patchIdx.x);
+        int py = Mathf.FloorToInt(patchIdx.y);
+        int pz = Mathf.FloorToInt(patchIdx.z);
         for (int x = px - numPatches; x < px + numPatches; x++) {
             buffer.Evaluate(x, 0, 0);
         }
     }
 
+    private GameObject[, ,] patches = new GameObject[bufferSize, bufferSize, bufferSize];
 
-
-    private Dictionary<int, GameObject> xIndex = new Dictionary<int, GameObject>();
-    private List<GameObject> patches = new List<GameObject>();
-    private GameObject[, ,] patches = new GameObject[numPatches, numPatches, numPatches];
-
-    private const float drawDistance = 100.0f;
+    private const float drawDistance = 70.0f;
     private const float patchSize = 10.0f;
 
     private const int numPatches = (int)(drawDistance / patchSize);
+    private const int numBorderPatches = 2;
+    private const int bufferSize = (numPatches * 2) + numBorderPatches;
 }
