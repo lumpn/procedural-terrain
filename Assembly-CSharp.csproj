@@ -46,6 +46,10 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Levels\BufferedTerrainPatch.cs" />
+     <Compile Include="Assets\Levels\GenerateTerrain.cs" />
+     <Compile Include="Assets\Levels\TerrainBuffer.cs" />
+     <Compile Include="Assets\Levels\TerrainPatch.cs" />
      <Compile Include="Assets\Scripts\Camera\FreeLook.cs" />
      <Compile Include="Assets\Scripts\Camera\MeshManipulation.cs" />
      <Compile Include="Assets\Scripts\Camera\SimpleSmoothMouseLook.cs" />
