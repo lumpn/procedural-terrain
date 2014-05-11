@@ -25,7 +25,7 @@ public class TerrainPatch {
         int idx = 0;
         Vector3[] face = new Vector3[3];
         foreach (var vertex in surface) {
-            //yield return 0;
+            yield return 0;
 
             // update face vertices
             face[idx++] = vertex;
@@ -63,7 +63,7 @@ public class TerrainPatch {
         }
 
         // update mesh
-        //yield return 0;
+        yield return 0;
         var mesh = meshObject.GetComponent<MeshFilter>().mesh;
         mesh.Clear();
         mesh.vertices = vertices.ToArray();
@@ -87,16 +87,18 @@ public class TerrainPatch {
     }
 
     private static Vector2 GetXY(Vector3 v) {
-        return new Vector2(v.x, v.y);
+        return new Vector2(v.x * uvScale, v.y * uvScale);
     }
 
     private static Vector2 GetXZ(Vector3 v) {
-        return new Vector2(v.x, v.z);
+        return new Vector2(v.x * uvScale, v.z * uvScale);
     }
 
     private static Vector2 GetYZ(Vector3 v) {
-        return new Vector2(v.y, v.z);
+        return new Vector2(v.y * uvScale, v.z * uvScale);
     }
 
     private GameObject meshObject;
+
+    private const float uvScale = 0.25f;
 }

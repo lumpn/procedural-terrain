@@ -24,7 +24,7 @@ public class TerrainBufferEntry {
         MarchingCubes evaluator, IDensity density, float isoLevel, Action<IEnumerator> startCoroutine) {
 
         // new position
-        Debug.Log("Evaluating patch (" + x + "," + y + "," + z + ") replacing (" + this.x + "," + this.y + "," + this.z + ")");
+        //Debug.Log("Evaluating patch (" + x + "," + y + "," + z + ") replacing (" + this.x + "," + this.y + "," + this.z + ")");
         this.x = x;
         this.y = y;
         this.z = z;
