@@ -10,7 +10,7 @@ public class TerrainPatch {
         this.meshObject = meshObject;
     }
 
-    public IEnumerable Evaluate(MarchingCubes evaluator, IDensity density, float isoLevel, Vector3 offset, float size, int resolution) {
+    public IEnumerator Evaluate(MarchingCubes evaluator, IDensity density, float isoLevel, Vector3 offset, float size, int resolution) {
 
         // evaluate density
         var range = new SamplingRange(-size / 2, size / 2, size / resolution);
@@ -25,7 +25,7 @@ public class TerrainPatch {
         int idx = 0;
         Vector3[] face = new Vector3[3];
         foreach (var vertex in surface) {
-            yield return 0;
+            //yield return 0;
 
             // update face vertices
             face[idx++] = vertex;
@@ -63,11 +63,11 @@ public class TerrainPatch {
         }
 
         // update mesh
-        yield return 0;
+        //yield return 0;
         var mesh = meshObject.GetComponent<MeshFilter>().mesh;
         mesh.Clear();
-        mesh.uv = uvs.ToArray();
         mesh.vertices = vertices.ToArray();
+        mesh.uv = uvs.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.Optimize();
         mesh.RecalculateNormals();

@@ -66,46 +66,19 @@ public class TerrainMesh : MonoBehaviour {
 
         // create density function
         const float isoLevel = 0.0f;
-        IDensity proceduralDensity = BuildDensity();
+        density = BuildDensity();
 
         // build mesh
-        density = new CachedDensity(proceduralDensity);
         var vertices = BuildIsoSurface(density, isoLevel, transform.position);
         UpdateMesh(vertices);
     }
 
     public void IncreaseDensity(Vector3 position) {
-        // TODO: add influence radius
-        Manipulate(position, 5);
+        // TODO: implement
     }
 
     public void DecreaseDensity(Vector3 position) {
-        // TODO: add influence radius
-        Manipulate(position, -5);
-    }
-
-    public void Manipulate(Vector3 position, float amount) {
-
-        // transform position to density cache indizes
-        var offset = position - transform.position;
-        int x = PositionToIndex(offset.x);
-        int y = PositionToIndex(offset.y);
-        int z = PositionToIndex(offset.z);
-        UnityEngine.Debug.Log("offset: " + offset + ", index: " + x + ", " + y + ", " + z);
-
-        // manipulate ball
-        float some = amount * 0.25f;
-        density.Add(x, y, z, amount);
-        for (int k = -1; k <= 1; k++) {
-            for (int j = -1; j <= 1; j++) {
-                for (int i = -1; i <= 1; i++) {
-                    density.Add(x + i, y + j, z + k, some);
-                }
-            }
-        }
-
-        var vertices = BuildIsoSurface(density, 0.0f, transform.position);
-        UpdateMesh(vertices);
+        // TODO: implement
     }
 
     private void UpdateMesh(List<Vector3> vertices) {
@@ -170,7 +143,7 @@ public class TerrainMesh : MonoBehaviour {
         return Mathf.FloorToInt((5 + x) * 4);
     }
 
-    private static List<Vector3> BuildIsoSurface(IIndexDensity density, float isoLevel, Vector3 offset) {
+    private static List<Vector3> BuildIsoSurface(IDensity density, float isoLevel, Vector3 offset) {
 
         // measure execution time
         var process = Process.GetCurrentProcess();
@@ -196,5 +169,5 @@ public class TerrainMesh : MonoBehaviour {
         return vertices;
     }
 
-    private CachedDensity density;
+    private IDensity density;
 }
