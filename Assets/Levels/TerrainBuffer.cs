@@ -7,51 +7,60 @@ using System;
 /// </summary>
 public class TerrainBuffer {
 
-    public TerrainBuffer(int bufferSize, GameObject meshPrototype, Action<IEnumerator> startCoroutine) {
-        this.bufferSize = bufferSize;
-        this.entries = new TerrainBufferEntry[bufferSize, bufferSize, bufferSize];
-        this.meshPrototype = meshPrototype;
-        this.startCoroutine = startCoroutine;
-    }
+  public TerrainBuffer(int bufferSize, GameObject meshPrototype,
+                       Action<IEnumerator> startCoroutine, Action<Action> executeOnMainThread) {
+    this.bufferSize = bufferSize;
+    this.entries = new TerrainBufferEntry[bufferSize, bufferSize, bufferSize];
+    this.meshPrototype = meshPrototype;
+    this.startCoroutine = startCoroutine;
+    this.executeOnMainThread = executeOnMainThread;
+  }
 
-    public void Generate(int x, int y, int z, MarchingCubes evaluator,
+  public void Generate(int x, int y, int z, MarchingCubes evaluator,
         IDensity density, float isoLevel, float size, int resolution) {
 
-        // already generated?
-        var entry = GetOrCreateEntry(x, y, z);
-        if (entry.IsAt(x, y, z)) return;
-
-        // evaluate density
-        entry.EvaluatePatch(x, y, z, size, resolution, evaluator, density, isoLevel, startCoroutine);
+    // already generated?
+    var entry = GetOrCreateEntry(x, y, z);
+    if (entry.IsAt(x, y, z)) {
+      return;
     }
 
-    private TerrainBufferEntry GetOrCreateEntry(int x, int y, int z) {
+    // evaluate density
+    entry.EvaluatePatch(x, y, z, size, resolution, evaluator, density, isoLevel,
+                        startCoroutine, executeOnMainThread);
+  }
 
-        // map into ring buffer
-        int mx = MapIndex(x);
-        int my = MapIndex(y);
-        int mz = MapIndex(z);
+  private TerrainBufferEntry GetOrCreateEntry(int x, int y, int z) {
 
-        // get entry?
-        var entry = entries[mx, my, mz];
-        if (entry != null) return entry;
+    // map into ring buffer
+    int mx = MapIndex(x);
+    int my = MapIndex(y);
+    int mz = MapIndex(z);
 
-        // create entry
-        // HACK: displace coordinate to make it evaluate its patch
-        entry = new TerrainBufferEntry(Int32.MinValue, 0, 0, meshPrototype);
-        entries[mx, my, mz] = entry;
-        return entry;
+    // get entry?
+    var entry = entries[mx, my, mz];
+    if (entry != null) {
+      return entry;
     }
 
-    private int MapIndex(int idx) {
-        int m = idx % bufferSize;
-        if (m < 0) return m + bufferSize;
-        return m;
+    // create entry
+    // HACK: displace coordinate to make it evaluate its patch
+    entry = new TerrainBufferEntry(Int32.MinValue, 0, 0, meshPrototype);
+    entries[mx, my, mz] = entry;
+    return entry;
+  }
+
+  private int MapIndex(int idx) {
+    int m = idx % bufferSize;
+    if (m < 0) {
+      return m + bufferSize;
     }
+    return m;
+  }
 
-    private int bufferSize;
-    private TerrainBufferEntry[, ,] entries;
-
-    private GameObject meshPrototype;
-    private Action<IEnumerator> startCoroutine;
+  private int bufferSize;
+  private TerrainBufferEntry[, ,] entries;
+  private GameObject meshPrototype;
+  private Action<IEnumerator> startCoroutine;
+  private Action<Action> executeOnMainThread;
 }
