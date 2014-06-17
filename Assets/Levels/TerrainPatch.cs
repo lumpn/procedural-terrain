@@ -10,13 +10,8 @@ public class TerrainPatch {
     this.meshObject = meshObject;
   }
 
-  public IEnumerator Evaluate(MarchingCubes evaluator, IDensity density, float isoLevel, Vector3 offset, float size, int resolution, Action<Action> executeOnMainThread) {
-
-    // hide from view
-    yield return 0;
-    executeOnMainThread(() => {
-      meshObject.renderer.enabled = false;
-    });
+  public void Evaluate(MarchingCubes evaluator, IDensity density, float isoLevel,
+                              Vector3 offset, float size, int resolution) {
 
     // evaluate density
     var range = new SamplingRange(-size / 2, size / 2, size / resolution);
@@ -27,15 +22,10 @@ public class TerrainPatch {
     var uvs = new List<Vector2>();
     var triangles = new List<int>();
 
-    yield return 0;
     int i = 0;
-    int j = 0;
     int idx = 0;
     Vector3[] face = new Vector3[3];
     foreach (var vertex in surface) {
-      if (j++ % 3 == 0) {
-//        yield return 0;
-      }
 
       // update face vertices
       face[idx++] = vertex;
@@ -74,11 +64,15 @@ public class TerrainPatch {
       triangles.Add(i++);
     }
 
-    // update mesh
-    yield return 0;
-    Mesh mesh = null;
-    executeOnMainThread(() => {
-      mesh = meshObject.GetComponent<MeshFilter>().mesh;
+    // update mesh on main thread
+    var mainContext = UnitySynchronizationContext.Main;
+    mainContext.Post(() => {
+
+      // hide from view
+      meshObject.renderer.enabled = false;
+
+      // update mesh
+      Mesh mesh = meshObject.GetComponent<MeshFilter>().mesh;
       mesh.Clear();
       mesh.vertices = vertices.ToArray();
       mesh.uv = uvs.ToArray();
@@ -86,21 +80,15 @@ public class TerrainPatch {
       mesh.Optimize();
       mesh.RecalculateNormals();
       mesh.RecalculateBounds();
-    });
 
-    // update collider
-    yield return 0;
-    executeOnMainThread(() => {
+      // update collider
       var collider = meshObject.GetComponent<MeshCollider>();
       if (collider != null) {
         collider.sharedMesh = null;
         collider.sharedMesh = mesh;
       }
-    });
 
-    // re-position
-    yield return 0;
-    executeOnMainThread(() => {
+      // re-position
       meshObject.transform.position = offset;
       meshObject.renderer.enabled = true;
     });
@@ -118,6 +106,6 @@ public class TerrainPatch {
     return new Vector2(v.y * uvScale, v.z * uvScale);
   }
 
-  private GameObject meshObject;
+  private readonly GameObject meshObject;
   private const float uvScale = 0.25f;
 }
