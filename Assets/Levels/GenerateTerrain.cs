@@ -127,7 +127,7 @@ public class GenerateTerrain : MonoBehaviour {
   private TerrainBuffer buffer;
   private const float isoLevel = 0.0f;
   private const int resolution = 20;
-  private const float drawDistance = 20.0f;
+  private const float drawDistance = 50.0f;
   private const float patchSize = 10.0f;
   private const int numPatches = (int) (drawDistance / patchSize);
   private const int bufferSize = numPatches * 2 + 1;

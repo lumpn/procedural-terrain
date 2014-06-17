@@ -15,6 +15,7 @@ public class TerrainBufferEntry {
     GameObject meshObject = null;
     UnitySynchronizationContext.Main.Send(() =>
         meshObject = GameObject.Instantiate(meshPrototype) as GameObject);
+    this.meshObject = meshObject;
     this.patch = new TerrainPatch(meshObject);
   }
 
@@ -35,6 +36,9 @@ public class TerrainBufferEntry {
       this.z = z;
     }
 
+    UnitySynchronizationContext.Main.Post(() =>
+        meshObject.name = "Patch (" + x + "," + y + "," + z + ")");
+
     // re-evaluate patch
     var offset = new Vector3(x * size, y * size, z * size);
     patch.Evaluate(evaluator, density, isoLevel, offset, size, resolution);
@@ -42,5 +46,6 @@ public class TerrainBufferEntry {
 
   private int x, y, z;
   private readonly object mutex = new object();
+  private readonly GameObject meshObject;
   private readonly TerrainPatch patch;
 }
